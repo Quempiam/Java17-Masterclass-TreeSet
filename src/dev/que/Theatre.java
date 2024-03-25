@@ -38,21 +38,70 @@ public class Theatre {
         char row = 'A';
         for (int i = 0; i < numberOfRows; i++) {
             for (int j = 1; j <= this.seatsPerRow; j++) {
-                seatSet.add(new Seat(row, j++));
+                seatSet.add(new Seat(row, j));
             }
             row++;
         } // if numberOfRows == 0, seatSet will be empty
         System.out.println("-".repeat(20));
-        System.out.printf("%s theatre has %d seats located in %d rows.", name, seatSet.size(), numberOfRows);
+        System.out.printf("%s theatre has %d seats located in %d rows.\n", name, seatSet.size(), numberOfRows);
     }
 
     public void printSeatMap() {
+        System.out.println("-".repeat(20));
+        System.out.println("Seats in Theatre " + name + " :");
+
         Iterator<Seat> seatIterator = seatSet.iterator();
         for (int i = 0; i < numberOfRows; i++) {
+            System.out.printf("%c  ", (char) 65 + i);
             for (int j = 0; j < seatsPerRow; j++) {
-                System.out.printf("%s ", seatIterator.next());
+                Seat seat = seatIterator.next();
+                System.out.printf("%s%c ", seat.getSeatID(),
+                        seat.isReserved() ? '☑' : '☐');
+            }
+            System.out.print("\n");
+        }
+        System.out.println("-".repeat(20));
+    }
+
+    public boolean reserveSeat(String seatID, boolean reserve) {
+        if (seatID == null) {
+            System.out.println("SeatID cannot be null.");
+            return false;
+        }
+        if (seatID.length() != 4){
+            System.out.println("Incorrect seatID format.");
+            return false;
+        }
+        char row = seatID.toUpperCase().charAt(0);
+        if (row < 'A' || row > 'Z') {
+            System.out.println("Incorrect row character");
+            return false;
+        }
+        try {
+            int number = Integer.parseInt(seatID.substring(1));
+            Seat requestedSeat = new Seat(row, number);
+            Seat seatToReserve = seatSet.floor(requestedSeat);
+            if (requestedSeat.equals(seatToReserve)) {
+                if (seatToReserve.isReserved() == reserve) {
+                    System.out.println("Seat " + seatToReserve.getSeatID() + " is already " +
+                            (reserve ? "reserved." : "not reserved."));
+                    return false;
+                }
+                else {
+                    seatToReserve.setReserved(reserve);
+                    System.out.println("Reservation of seat " + seatToReserve.getSeatID() +
+                            " has been " + (seatToReserve.isReserved() ? "set." : "canceled"));
+                    return true;
+                }
+            }
+            else {
+                System.out.println("Requested seat (" + requestedSeat.getSeatID() + ") has not been found.");
             }
         }
+        catch (NumberFormatException e) {
+            System.out.println("Incorrect number format.");
+        }
+        return false;
     }
 
     private class Seat{
